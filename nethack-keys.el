@@ -1,6 +1,6 @@
 ;;; nethack-keys.el --- key bindings for nethack-el
 
-;; Copyright (C) 2002  Ryan Yeske and Shawn Betts
+;; Copyright (C) 2002,2003,2005  Ryan Yeske and Shawn Betts
 
 ;; Author: Ryan C Yeske <rcyeske@vcn.bc.ca>
 ;; Keywords: games
@@ -96,8 +96,8 @@
     (define-key map "\C-r" 'nethack-command-redraw-screen)
     ;;^T      Teleport around level
     (define-key map "\C-t" 'nethack-command-teleport-around-level)
-    ;;^Z      Suspend game (only if defined) (NOTE: this is useless in emacs i think)
-    (define-key map "\M-z" 'nethack-command-suspend-game)
+    ;;^Z      Suspend game (only if defined) (NOTE: this is useless in emacs i think, but ride isn't)
+    (define-key map "\M-z" 'nethack-command-ride)
     ;;a       Apply (use) a tool
     (define-key map "a" 'nethack-command-apply)
     ;;A       Remove all armor
@@ -316,8 +316,10 @@
     ;;M-q     Quit
     (define-key map "\eq" 'nethack-command-quit)
 
-    ;;M-r     Rub a lamp
-    (define-key map "\er" 'nethack-command-rub)
+    ;;M-r u   Rub a lamp
+    (define-key map "\eru" 'nethack-command-rub)
+    (define-key map "\eri" 'nethack-command-ride)
+    
     ;;M-s     Sit down
     (define-key map "\es" 'nethack-command-sit)
     ;;M-T     Turn undead

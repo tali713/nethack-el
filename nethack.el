@@ -1,10 +1,10 @@
 ;;; nethack.el --- run Nethack as a subprocess
 
-;; Copyright (C) 2003  Ryan Yeske and Shawn Betts
+;; Copyright (C) 2003,2005  Ryan Yeske and Shawn Betts
 
 ;; Author: Ryan Yeske <rcyeske@vcn.bc.ca>
 ;; Created: Sat Mar 18 11:31:52 2000
-;; Version: $Id$
+;; Version: $Id: nethack.el,v 1.83 2004/11/19 23:09:09 sabetts Exp $
 ;; Keywords: games
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@
   "Emacs lisp frontend to the lisp window port of Nethack 3.4.0."
   :group 'games)
 
-(defcustom nethack-program "nethack"
+(defcustom nethack-program "nethack-lisp"
   "Program to run to start a game of Nethack."
   :type '(string)
   :group 'nethack)
@@ -533,7 +533,7 @@ buffer."
     (kill-buffer nh-status-buffer))
   (when (buffer-live-p nh-message-buffer)
     (kill-buffer nh-message-buffer))
-  (mapcar (lambda (x) (when (buffer-live-p (cdr x))
+  (mapc (lambda (x) (when (buffer-live-p (cdr x))
 			(kill-buffer (cdr x)))) nh-menu-buffer-table)
   (kill-buffer (get-buffer nh-log-buffer)))
   

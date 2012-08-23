@@ -1,10 +1,10 @@
 ;;; nethack-api.el -- Emacs interface the lisp window-port
 
-;; Copyright (C) 2002  Ryan Yeske and Shawn Betts
+;; Copyright (C) 2002,2003,2005  Ryan Yeske and Shawn Betts
 
 ;; Author: Ryan Yeske
 ;; Created: Sat Mar 18 11:24:02 2000
-;; Version: $Id$
+;; Version: $Id: nethack-api.el,v 1.93 2004/11/19 23:05:39 sabetts Exp $
 ;; Keywords: games
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -45,9 +45,11 @@
 (defun nh-menu-buffer (menuid)
   "Return the buffer that corresponds to the MENUID."
   (let ((buffer (cdr (assq menuid nh-menu-buffer-table))))
-    (if (buffer-live-p buffer)
+   ;; (if (buffer-live-p buffer)
 	buffer
-      'nobuffer)))
+     ;; 'nobuffer
+;;)
+        ))
 
 (defvar nh-message-highlight-overlay nil
   "Overlay used to highlight new text in the message window.")
@@ -278,7 +280,7 @@ FIXME: doesnt actually use ATTR!"
   (with-current-buffer nh-message-buffer
     (goto-char (point-max))
     (run-hooks 'nethack-before-print-message-hook)
-    (insert str "\n")
+    (insert (concat (mapcar 'identity str)) "\n")
     ;; cover new text with highlight overlay
     (let ((start (overlay-start nh-message-highlight-overlay)))
       (move-overlay nh-message-highlight-overlay
@@ -307,27 +309,71 @@ FIXME: doesnt actually use ATTR!"
    nethack-bright-cyan-face 	nethack-white-face]
   "Vector indexed by Nethack's color number.")
 
+;;(defun gamegrid-set-face (C) '())
+
+(defun nh-gamegrid-set-cell (x y c)
+  (save-excursion
+    (let ((buffer-read-only nil))
+      (goto-char (gamegrid-cell-offset x y))
+      (delete-char 1)
+      (insert-char c 1))))
+
+(defun nh-ibm-trans (ch)
+  (elt [8199 9786 9787 9829 9830 9827 9824 8226 9688 9675 10
+        9794 9792 9834 9835 9788 9658 9668 8597 8252 182 167 9644
+        8616 8593 8595 8594 8592 8735 8596 9650 9660 32 33 34 35
+        36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54
+        55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73
+        74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92
+        93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108
+        109 110 111 112 113 114 115 116 117 118 119 120 121 122
+        123 124 125 126 8962 199 252 233 226 228 224 229 231 234
+        235 232 239 238 236 196 197 201 230 198 244 246 242 251
+        249 255 214 220 162 163 165 8359 402 225 237 243 250 241
+        209 170 186 191 8976 172 189 188 161 171 187 9617 9618
+        9619 9474 9508 9569 9570 9558 9557 9571 9553 9559 9565
+        9564 9563 9488 9492 9524 9516 9500 9472 9532 9566 9567
+        9562 9556 9577 9574 9568 9552 9580 9575 9576 9572 9573
+        9561 9560 9554 9555 9579 9578 9496 9484 9608 9604 9612
+        9616 9600 945 223 915 960 931 963 181 964 934 920 937 948
+        8734 966 949 8745 8801 177 8805 8804 8992 8993 247 8776
+        176 8729 183 8730 8319 178 9632 160]
+       ch))
+
+
+
 (defun nhapi-print-glyph (x y color glyph tile ch &optional special)
   "Insert glyph into `nh-map-buffer'."
   (set-buffer nh-map-buffer)
   (setq x (- x 1))			; FIXME: put this hack in C
   (let ((inhibit-read-only t))
     (if nethack-use-tiles
-	(save-excursion 
-	  (let ((buffer-read-only nil))
-	    (goto-char (gamegrid-cell-offset x y))
-	    (delete-char 1)
-	    (insert-image (elt nh-tile-vector tile))))
-      (gamegrid-set-cell x y ch)
+        (save-excursion 
+          (let ((buffer-read-only nil))
+            (goto-char (gamegrid-cell-offset x y))
+            (delete-char 1)
+            (insert-image (elt nh-tile-vector tile))))
+      (nh-gamegrid-set-cell x y (nh-ibm-trans ch))
       ;; If the glyph is a pet then color it with the
       ;; nethack-pet-face.
-      (let ((color (if (eq special 'pet)
-		       'nethack-pet-face
-		     (aref nh-colors color))))
-	(put-text-property (gamegrid-cell-offset x y)
-			   (1+ (gamegrid-cell-offset x y))
-			   'face
-			   color)))))
+      (let ((color `(face (:inherit
+                           ,(aref nh-colors color)
+                           :inverse-video
+                           ,(if (eq special 'pet) t nil)))))
+        (add-text-properties (gamegrid-cell-offset x y)
+                             (1+ (gamegrid-cell-offset x y))
+                             color)))))
+
+;;      (let ((color (aref nh-colors color)))
+             ;; (color (
+             ;;             (progn
+
+             ;;               'nethack-pet-face)
+             ;;           color))))
+
+
+
+
 
 (defun nhapi-yn-function (ques choices default)
   ""
@@ -514,7 +560,7 @@ The TYPE argument is legacy and serves no real purpose."
       (erase-buffer)
       (if nethack-use-tiles
 	  (progn ;; FIXME: test to see if emacs is capable of tiles
-	    (require 'nethack-glyphs)
+	    (require 'nethack-tiles)
 	    ;; initialize the map with empty tiles
 	    (dotimes (i nh-map-height)
 	      (dotimes (j nh-map-width)
@@ -581,7 +627,7 @@ was actually toggled."
 	    (old-point (point)))
 	(goto-char (point-min))
 	(if (re-search-forward (format "^[%c] \\([-+]\\|[0-9]+\\) .+$" 
-				last-command-char)
+                                       last-command-event)
 			       nil t)
 	    (let ((value (match-string 1))
 		  (start (match-beginning 1))
@@ -599,7 +645,7 @@ was actually toggled."
 	      (beginning-of-line)
 	      (if (eq nh-menu-how 'pick-one)
 		  (nh-menu-submit)))
-	  (message "No such menu option: %c" last-command-char)
+	  (message "No such menu option: %c" last-command-event)
 	  (goto-char old-point)))))
 	  
 (defun nh-menu-toggle-all-items ()
