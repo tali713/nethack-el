@@ -58,12 +58,15 @@ Add the following to your ~/.emacs
 ;;;;;;;;;;;;;;
 ;; add the following to your ~/.emacs
 ;; (add-hook 'nethack-add-menu-hook 'nethack-x-highlight-option)
-(defvar nethack-x-highlights '((" blessed " . nethack-green-face)
-			       (" holy " . nethack-green-face)
-			       (" cursed " . nethack-red-face)
-			       (" unholy " . nethack-green-face)
-			       (" cursed .* (being worn)" . nethack-orange-face))
-  "An assoc of regexps and font colors")
+(defvar nethack-x-highlights
+  "An assoc of regexps and font colors"
+  '((" blessed " . nethack-green-face)
+    (" holy " . nethack-green-face)
+    (" cursed " . nethack-red-face)
+    (" uncursed " . nethack-gray-face)
+    (" unholy " . nethack-green-face)
+    (" cursed .* (being worn)" . nethack-orange-face)))
+
 
 (defun nethack-x-highlight-option ()
   "Highlight a nethack menu option based on a regexp."
