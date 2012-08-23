@@ -1,3 +1,17 @@
+2012-08-23 Evan Izaksonas-Smith <izak0002@dev.null>
+	* nethack-api.el (nh-menu-buffer): Removed bug caused by returning
+	'nobuffer instead of a buffer, may still require additional fixing.
+	(nh-gaemgrid-set-cell): A variant of gaemgrid-set-cell that can
+	handle characters beyond ascii.
+	(nh-ibm-trans): A translation table for cp347, to allow for using
+	the ibm graphics option.
+	(nhapi-print-glyph): Modified to use above.
+	(nhapi-yn-function): switched last-command-char to
+	last-command-event to support emacs-24
+	* nethack-keys.el added binding for riding and rubbing, since we
+	probably want to be able to do both.
+	* nethack.el (nethack-program) is nethack-lisp by default.
+
 2011-10-09 PJ Weisberg <pj@irregularexpressions.net>
 	* nethack-api.el (nh-propertize-attribute): Add logic to handle
 	strength between 18 and 19
